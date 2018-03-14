@@ -1,0 +1,2 @@
+2018-03-14 23:24:40 INFO  CatRestaurantServiceImpl - All cats are busy. Can not choose a cat in CatRestaurantServiceImpl class chooseCat() method!
+2018-03-14 23:25:33 INFO  CatRestaurantServiceImpl - All waiters are busy. Can not get an order in CatRestaurantServiceImpl class getUntouchedOrder() method!

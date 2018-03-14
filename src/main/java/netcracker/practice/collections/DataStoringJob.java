@@ -3,16 +3,19 @@ package netcracker.practice.collections;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DataStoringJob {
-    private final static String menuPath = "menu.properties";
-    private final static String catsPath = "cats.properties";
-    private final static String waitersPath = "waiters.properties";
+    private final static String MENU_PATH = "menu.json";
+    private final static String CATS_PATH = "cats.json";
+    private final static String WAITERS_PATH = "waiters.json";
+
+    public static final Logger LOG = Logger.getLogger(DataStoringJob.class.getName());
 
     private void writeListToFile(List<String> list, String path) {
         ObjectMapper mapper = new ObjectMapper();
@@ -22,7 +25,7 @@ public class DataStoringJob {
                 writer.writeValue(new File(path), list);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("JSON Exception in DataStoringJob class writeListToFile() method!\n", e);
         }
     }
 
@@ -31,12 +34,12 @@ public class DataStoringJob {
         try {
             return mapper.readValue(new File(path), List.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("JSON Exception in DataStoringJob class readListFromFile() method!\n", e);
             return null;
         }
     }
 
-    private void writeHashSetToFile(HashSet<String> set, String path) {
+    private void writeSetToFile(Set<String> set, String path) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             if (set != null && !set.isEmpty()) {
@@ -44,41 +47,41 @@ public class DataStoringJob {
                 writer.writeValue(new File(path), set);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("JSON Exception in DataStoringJob class writeSetToFile() method!\n", e);
         }
     }
 
-    private HashSet<String> readHashSetFromFile(String path) {
+    private Set<String> readSetFromFile(String path) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(new File(path), HashSet.class);
+            return mapper.readValue(new File(path), Set.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error("JSON Exception in DataStoringJob class readSetFromFile() method!\n", e);
             return null;
         }
     }
 
     public void writeMenuToFile(List<String> menu) {
-        writeListToFile(menu, menuPath);
+        writeListToFile(menu, MENU_PATH);
     }
 
     public List<String> readMenuFromFile() {
-        return (List<String>) readListFromFile(menuPath);
+        return readListFromFile(MENU_PATH);
     }
 
-    public void writeCatsToFile(HashSet<String> cats) {
-        writeHashSetToFile(cats, catsPath);
+    public void writeCatsToFile(Set<String> cats) {
+        writeSetToFile(cats, CATS_PATH);
     }
 
-    public HashSet<String> readCatsFromFile() {
-        return (HashSet<String>) readHashSetFromFile(catsPath);
+    public Set<String> readCatsFromFile() {
+        return readSetFromFile(CATS_PATH);
     }
 
-    public void writeWaitersToFile(HashSet<String> waiters) {
-        writeHashSetToFile(waiters, waitersPath);
+    public void writeWaitersToFile(Set<String> waiters) {
+        writeSetToFile(waiters, WAITERS_PATH);
     }
 
-    public HashSet<String> readWaitersFromFile() {
-        return (HashSet<String>) readHashSetFromFile(waitersPath);
+    public Set<String> readWaitersFromFile() {
+        return readSetFromFile(WAITERS_PATH);
     }
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Solution {
-    private static CatRestaurantServiceImpl catRestaurantService = CatRestaurantServiceImpl.getInstance();
+    private static CatRestaurantService catRestaurantService = new CatRestaurantServiceImpl();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);

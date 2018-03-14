@@ -1,23 +1,26 @@
 package netcracker.practice.collections;
 
+import org.apache.log4j.Logger;
+
 import java.util.*;
 
 public class CatRestaurantServiceImpl implements CatRestaurantService {
-    private static CatRestaurantServiceImpl instance;
-    private HashSet<String> cats;
-    private HashSet<String> waiters;
-    private HashSet<String> busyCats;
+    private Set<String> cats;
+    private Set<String> waiters;
+    private Set<String> busyCats;
     private List<String> menu;
     private Queue<Order> ordersQueue;
     private Queue<String> freeWaitersQueue;
-    private HashSet<String> busyWaiters;
+    private Set<String> busyWaiters;
     private Map<String, Integer> countOfOrdersForWaiters;
 
     private DataStoringJob dataStoringJob = new DataStoringJob();
+    public static final Logger LOG = Logger.getLogger(CatRestaurantServiceImpl.class.getName());
 
-    private CatRestaurantServiceImpl() {
-        cats = getCats();
-        waiters = getWaiters();
+    public CatRestaurantServiceImpl(List<String> menu, Set<String> cats, Set<String> waiters) {
+        this.menu = menu;
+        this.cats = cats;
+        this.waiters = waiters;
 
         busyCats = new HashSet<>();
         ordersQueue = new LinkedList<>();
@@ -28,6 +31,18 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
 
         countOfOrdersForWaiters = new HashMap<>();
 
+        releaseWaitersAndCats();
+    }
+
+    public CatRestaurantServiceImpl() {
+        this(null, new HashSet<>(), new HashSet<>());
+        this.cats = dataStoringJob.readCatsFromFile();
+        this.waiters = dataStoringJob.readWaitersFromFile();
+
+        freeWaitersQueue.addAll(waiters);
+    }
+
+    private void releaseWaitersAndCats() {
         Thread releaseWaitersAndCatsThread = new Thread(() -> {
             while (true) {
                 if (!busyWaiters.isEmpty()) {
@@ -47,19 +62,12 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    LOG.error("Thread Exception in CatRestaurantServiceImpl class releaseWaitersAndCats() method!\n", e);
                 }
             }
         });
         releaseWaitersAndCatsThread.setDaemon(true);
         releaseWaitersAndCatsThread.start();
-    }
-
-    public static CatRestaurantServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new CatRestaurantServiceImpl();
-        }
-        return instance;
     }
 
     @Override
@@ -70,7 +78,9 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
     @Override
     public void createOrder(int numberOfTable, ArrayList<Integer> menuItems) {
         LinkedList<String> dishes = new LinkedList<>();
-        for (int item : menuItems) dishes.add(menu.get(item));
+        for (int item : menuItems) {
+            dishes.add(menu.get(item));
+        }
         ordersQueue.add(new Order(numberOfTable, dishes));
         System.out.println("Ваш заказ: " + dishes);
         getUntouchedOrder();
@@ -86,6 +96,7 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
             }
         } catch (NoSuchElementException e) {
             System.out.println("Все котики сейчас заняты. Попробуйте позже.");
+            LOG.info("All cats are busy. Can not choose a cat in CatRestaurantServiceImpl class chooseCat() method!");
         }
         return catName;
     }
@@ -96,8 +107,10 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
         if (order != null) {
             String waiterName = freeWaitersQueue.poll();
 
-            if (waiterName == null)
+            if (waiterName == null) {
                 System.out.println("К сожалению все официанты заняты, пожалуйста, подождите немного.");
+                LOG.info("All waiters are busy. Can not get an order in CatRestaurantServiceImpl class getUntouchedOrder() method!");
+            }
             while (waiterName == null) {
                 waiterName = freeWaitersQueue.poll();
             }
@@ -125,26 +138,7 @@ public class CatRestaurantServiceImpl implements CatRestaurantService {
         return menu;
     }
 
-    public HashSet<String> getCats() {
-        if (cats == null) {
-            cats = dataStoringJob.readCatsFromFile();
-            if (cats == null) {
-                cats = new HashSet<>();
-            }
-        }
-        return cats;
-    }
-
-    public HashSet<String> getWaiters() {
-        if (waiters == null) {
-            waiters = dataStoringJob.readWaitersFromFile();
-            if (waiters == null) {
-                waiters = new HashSet<>();
-            }
-        }
-        return waiters;
-    }
-
+    @Override
     public void getWaitersStatistic() {
         System.out.println(countOfOrdersForWaiters);
     }
